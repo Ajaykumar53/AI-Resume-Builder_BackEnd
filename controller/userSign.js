@@ -40,6 +40,7 @@ exports.userSignUp = async (req, res, next) => {
 
 exports.userSignIn = async (req,res,next) => {
   const {userEmail,userPassword} = req.body
+  console.log("user SignIn")
   const user = await signInUser_Model(userEmail, userPassword)
   if(user === "no user found") {
     return res.status(401).send("User not found")
