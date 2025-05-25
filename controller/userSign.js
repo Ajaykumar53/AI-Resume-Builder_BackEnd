@@ -48,7 +48,7 @@ exports.userSignIn = async (req,res,next) => {
   }
 res.cookie("token", user, {
   httpOnly: true,
-  secure: false,       // set true for HTTPS in production
+  secure: true,       
   sameSite: "lax",
   maxAge: 24 * 60 * 60 * 1000,
 });
