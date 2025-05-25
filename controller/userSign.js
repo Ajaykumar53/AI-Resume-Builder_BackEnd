@@ -52,7 +52,6 @@ res.cookie("token", user, {
   sameSite: "lax",
   maxAge: 24 * 60 * 60 * 1000,
 });
-console.log(user)
 res.send(user)
 }
 
