@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "ai21": "^1.1.1",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.14.0",
+    "multer": "^1.4.5-lts.2",
+    "mysql2": "^3.14.0",
+    "openai": "^4.92.0",
+    "pdf-parse": "^1.1.1",
+    "playwright": "^1.51.1",
+    "puppeteer": "^24.2.1",
+    "puppeteer-core": "^24.2.0",
+    "wkhtmltopdf": "^0.4.0"
+  }
+}
