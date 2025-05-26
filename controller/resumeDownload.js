@@ -56,8 +56,8 @@
 //     res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
 //   }
 // };
-
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core'); // Use puppeteer-core for explicit Chrome path
+const fs = require('fs'); // For debugging Chrome path
 
 exports.ResumeDownload = async (req, res) => {
   console.log('PDF Download Request Received');
@@ -68,29 +68,39 @@ exports.ResumeDownload = async (req, res) => {
     if (!htmlContent) {
       return res.status(400).json({ error: '❗HTML content is required!' });
     }
-const executablePath = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome';
 
-const browser = await puppeteer.launch({
-  headless: 'new',
-  args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  executablePath: executablePath,
-});
+    // Define Chrome executable path from deployment logs
+    const executablePath = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome';
 
+    // Debug: Check if Chrome executable exists
+    console.log('Chrome executable exists:', fs.existsSync(executablePath));
 
+    const browser = await puppeteer.launch({
+      headless: true, // Use true instead of 'new' for broader compatibility
+      args: [
+        '--no-sandbox', // Required for Render
+        '--disable-setuid-sandbox', // Required for Render
+        '--disable-dev-shm-usage', // Prevent memory issues in containers
+        '--disable-gpu', // Disable GPU for headless environments
+      ],
+      executablePath: executablePath, // Explicitly set Chrome path
+    });
 
     const page = await browser.newPage();
     await page.setContent(htmlContent, {
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
 
+    // Wait for fonts to load
     await page.evaluateHandle('document.fonts.ready');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Add a small delay to ensure rendering stability
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     await page.emulateMediaType('screen');
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      height: '1123px',
-      width: '794px',
+      width: '794px', // Explicit width for A4
+      height: '1123px', // Explicit height for A4
       printBackground: true,
       pageRanges: '1',
       preferCSSPageSize: true,
