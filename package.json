@@ -18,7 +18,7 @@
     "wkhtmltopdf": "^0.4.0"
   },
   "scripts": {
-    "postinstall": "npx puppeteer browsers install chrome",
-    "start": "node app.js"
+   "start": "node app.js",
+    "postinstall": "npx puppeteer browsers install chrome@133.0.6943.98"
   }
 }

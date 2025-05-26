@@ -56,8 +56,9 @@
 //     res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
 //   }
 // };
-const puppeteer = require('puppeteer-core'); // Use puppeteer-core for explicit Chrome path
-const fs = require('fs'); // For debugging Chrome path
+const puppeteer = require('puppeteer-core');
+const fs = require('fs');
+const path = require('path');
 
 exports.ResumeDownload = async (req, res) => {
   console.log('PDF Download Request Received');
@@ -69,21 +70,63 @@ exports.ResumeDownload = async (req, res) => {
       return res.status(400).json({ error: '❗HTML content is required!' });
     }
 
-    // Define Chrome executable path from deployment logs
-    const executablePath = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome';
+    // Define Chrome executable path
+    const defaultExecutablePath = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome';
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || defaultExecutablePath;
 
     // Debug: Check if Chrome executable exists
+    console.log('Checking Chrome executable at:', executablePath);
     console.log('Chrome executable exists:', fs.existsSync(executablePath));
 
+    // Debug: List files in Puppeteer cache directory
+    const puppeteerCacheDir = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64';
+    try {
+      const files = fs.readdirSync(puppeteerCacheDir);
+      console.log('Files in Puppeteer cache directory:', files);
+      if (fs.existsSync(executablePath)) {
+        const stats = fs.statSync(executablePath);
+        console.log('Chrome file permissions:', stats.mode.toString(8));
+      }
+    } catch (dirError) {
+      console.log('Error reading Puppeteer cache directory:', dirError.message);
+    }
+
+    // Debug: Search for Chrome binary in common locations
+    const possiblePaths = [
+      executablePath,
+      '/usr/bin/google-chrome',
+      '/usr/local/bin/chrome',
+      '/opt/render/.cache/puppeteer/chrome/*/chrome-linux64/chrome',
+    ];
+    let foundPath = executablePath;
+    for (const p of possiblePaths) {
+      if (p.includes('*')) {
+        try {
+          const glob = require('glob').sync(p);
+          if (glob.length > 0) {
+            foundPath = glob[0];
+            console.log('Found Chrome at:', foundPath);
+            break;
+          }
+        } catch (globError) {
+          console.log('Glob search error:', globError.message);
+        }
+      } else if (fs.existsSync(p)) {
+        foundPath = p;
+        console.log('Found Chrome at:', foundPath);
+        break;
+      }
+    }
+
     const browser = await puppeteer.launch({
-      headless: true, // Use true instead of 'new' for broader compatibility
+      headless: true,
       args: [
-        '--no-sandbox', // Required for Render
-        '--disable-setuid-sandbox', // Required for Render
-        '--disable-dev-shm-usage', // Prevent memory issues in containers
-        '--disable-gpu', // Disable GPU for headless environments
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
       ],
-      executablePath: executablePath, // Explicitly set Chrome path
+      executablePath: foundPath,
     });
 
     const page = await browser.newPage();
@@ -91,16 +134,14 @@ exports.ResumeDownload = async (req, res) => {
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
 
-    // Wait for fonts to load
     await page.evaluateHandle('document.fonts.ready');
-    // Add a small delay to ensure rendering stability
     await new Promise((resolve) => setTimeout(resolve, 2000));
     await page.emulateMediaType('screen');
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      width: '794px', // Explicit width for A4
-      height: '1123px', // Explicit height for A4
+      width: '794px',
+      height: '1123px',
       printBackground: true,
       pageRanges: '1',
       preferCSSPageSize: true,
