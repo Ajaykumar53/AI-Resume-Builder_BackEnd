@@ -2,6 +2,7 @@
 const puppeteer = require("puppeteer");
 
 exports.ResumeDownload = async (req, res) => {
+  console.log("pdf Download Request Received");
   try {
     const { htmlContent } = req.body;
 
@@ -10,9 +11,11 @@ exports.ResumeDownload = async (req, res) => {
     }
 
     const browser = await puppeteer.launch({
-      headless:true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+  headless: true,
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || require('puppeteer').executablePath(),
+  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+});
+
 
     const page = await browser.newPage();
 
