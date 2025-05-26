@@ -56,9 +56,8 @@
 //     res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
 //   }
 // };
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
-const path = require('path');
 
 exports.ResumeDownload = async (req, res) => {
   console.log('PDF Download Request Received');
@@ -71,45 +70,25 @@ exports.ResumeDownload = async (req, res) => {
     }
 
     // Define Chrome executable path
-    const defaultExecutablePath = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome';
-    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || defaultExecutablePath;
+    const executablePath =
+      process.env.PUPPETEER_EXECUTABLE_PATH ||
+      '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome';
 
     // Debug: Check if Chrome executable exists
     console.log('Checking Chrome executable at:', executablePath);
     console.log('Chrome executable exists:', fs.existsSync(executablePath));
 
-    // Debug: List files in Puppeteer cache directory
+    // Debug: Check Puppeteer cache directory
     const puppeteerCacheDir = '/opt/render/.cache/puppeteer';
     try {
       const cacheFiles = fs.readdirSync(puppeteerCacheDir);
       console.log('Files in Puppeteer cache directory:', cacheFiles);
-      const chromeDir = path.join(puppeteerCacheDir, 'chrome');
-      if (fs.existsSync(chromeDir)) {
-        const chromeFiles = fs.readdirSync(chromeDir);
-        console.log('Files in Puppeteer chrome directory:', chromeFiles);
-      }
       if (fs.existsSync(executablePath)) {
         const stats = fs.statSync(executablePath);
         console.log('Chrome file permissions:', stats.mode.toString(8));
       }
     } catch (dirError) {
       console.log('Error reading Puppeteer cache directory:', dirError.message);
-    }
-
-    // Debug: Try alternative Chrome paths
-    const possiblePaths = [
-      executablePath,
-      '/usr/bin/google-chrome',
-      '/usr/local/bin/chrome',
-      '/opt/render/.cache/puppeteer/chrome/*/chrome-linux64/chrome',
-    ];
-    let foundPath = executablePath;
-    for (const p of possiblePaths) {
-      if (!p.includes('*') && fs.existsSync(p)) {
-        foundPath = p;
-        console.log('Found Chrome at:', foundPath);
-        break;
-      }
     }
 
     const browser = await puppeteer.launch({
@@ -120,7 +99,7 @@ exports.ResumeDownload = async (req, res) => {
         '--disable-dev-shm-usage',
         '--disable-gpu',
       ],
-      executablePath: foundPath,
+      executablePath: executablePath,
     });
 
     const page = await browser.newPage();

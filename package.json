@@ -20,6 +20,6 @@
   },
   "scripts": {
 "start": "node app.js",
-    "postinstall": "npx puppeteer browsers install chrome@133.0.6943.98"
+    "postinstall": "npx playwright install chromium"
   }
 }
