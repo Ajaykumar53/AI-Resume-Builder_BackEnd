@@ -2,6 +2,10 @@
 const puppeteer = require("puppeteer");
 
 exports.ResumeDownload = async (req, res) => {
+
+  (async () => {
+  console.log("Chromium executable path:", puppeteer.executablePath());
+})();
   console.log("pdf Download Request Received");
   try {
     const { htmlContent } = req.body;
@@ -10,10 +14,10 @@ exports.ResumeDownload = async (req, res) => {
       return res.status(400).json({ error: "❗HTML content is required!" });
     }
 
-    const browser = await puppeteer.launch({
+  const browser = await puppeteer.launch({
   headless: true,
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || require('puppeteer').executablePath(),
-  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  executablePath: puppeteer.executablePath(), // Force use puppeteer's downloaded chrome
 });
 
 
