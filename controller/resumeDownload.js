@@ -79,10 +79,15 @@ exports.ResumeDownload = async (req, res) => {
     console.log('Chrome executable exists:', fs.existsSync(executablePath));
 
     // Debug: List files in Puppeteer cache directory
-    const puppeteerCacheDir = '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64';
+    const puppeteerCacheDir = '/opt/render/.cache/puppeteer';
     try {
-      const files = fs.readdirSync(puppeteerCacheDir);
-      console.log('Files in Puppeteer cache directory:', files);
+      const cacheFiles = fs.readdirSync(puppeteerCacheDir);
+      console.log('Files in Puppeteer cache directory:', cacheFiles);
+      const chromeDir = path.join(puppeteerCacheDir, 'chrome');
+      if (fs.existsSync(chromeDir)) {
+        const chromeFiles = fs.readdirSync(chromeDir);
+        console.log('Files in Puppeteer chrome directory:', chromeFiles);
+      }
       if (fs.existsSync(executablePath)) {
         const stats = fs.statSync(executablePath);
         console.log('Chrome file permissions:', stats.mode.toString(8));
@@ -91,7 +96,7 @@ exports.ResumeDownload = async (req, res) => {
       console.log('Error reading Puppeteer cache directory:', dirError.message);
     }
 
-    // Debug: Search for Chrome binary in common locations
+    // Debug: Try alternative Chrome paths
     const possiblePaths = [
       executablePath,
       '/usr/bin/google-chrome',
@@ -100,18 +105,7 @@ exports.ResumeDownload = async (req, res) => {
     ];
     let foundPath = executablePath;
     for (const p of possiblePaths) {
-      if (p.includes('*')) {
-        try {
-          const glob = require('glob').sync(p);
-          if (glob.length > 0) {
-            foundPath = glob[0];
-            console.log('Found Chrome at:', foundPath);
-            break;
-          }
-        } catch (globError) {
-          console.log('Glob search error:', globError.message);
-        }
-      } else if (fs.existsSync(p)) {
+      if (!p.includes('*') && fs.existsSync(p)) {
         foundPath = p;
         console.log('Found Chrome at:', foundPath);
         break;
