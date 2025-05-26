@@ -38,22 +38,22 @@ exports.userSignUp = async (req, res, next) => {
   }
 };
 
-exports.userSignIn = async (req,res,next) => {
-  const {userEmail,userPassword} = req.body
+exports.userSignIn = async (req, res, next) => {
+  const { userEmail, userPassword } = req.body
   console.log("user SignIn")
   const user = await signInUser_Model(userEmail, userPassword)
-  if(user === "no user found") {
+  if (user === "no user found") {
     return res.status(401).send("User not found")
-  }else if(user === "credentials are not matching"){
+  } else if (user === "credentials are not matching") {
     return res.status(401).send("Credentials are not matching")
   }
-res.cookie("token", user, {
-  httpOnly: true,
-  secure: true,       
-  sameSite: "lax",
-  maxAge: 24 * 60 * 60 * 1000,
-});
-res.send(user)
+  res.cookie("token", user, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+  res.send(user)
 }
 
 
