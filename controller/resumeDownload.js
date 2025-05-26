@@ -68,11 +68,12 @@ exports.ResumeDownload = async (req, res) => {
     if (!htmlContent) {
       return res.status(400).json({ error: '❗HTML content is required!' });
     }
+const browser = await puppeteer.launch({
+  executablePath: '/opt/render/.cache/puppeteer/chrome/linux-133.0.6943.98/chrome-linux64/chrome',
+  headless: 'new',
+  args: ['--no-sandbox', '--disable-setuid-sandbox'],
+});
 
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
 
     const page = await browser.newPage();
     await page.setContent(htmlContent, {
