@@ -43,10 +43,6 @@ app.get("/", (req, res) => {
   res.send("👋 Hello from Backend");
 });
 
-app.get("/aj", (req, res) => {
-  res.send("👋 Hello from aj");
-});
-
 
 const DB_PATH = "mongodb+srv://kumarajparmar:MvoSBuvpJ2zaTfLN@cluster0.6oomtku.mongodb.net/AIresumebuilder"
 
