@@ -1,6 +1,5 @@
 FROM node:18-slim
 
-# Install required dependencies for Chromium to run Puppeteer properly
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     fonts-liberation \
@@ -21,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     libxcb1 \
     libxext6 \
+    libgbm1 \
     xdg-utils \
     wget \
     --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -29,7 +29,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install  # Puppeteer will download Chromium here
+RUN npm install
 
 COPY . .
 

@@ -40,7 +40,6 @@ app.use(user.userAuth);                // /signup /login /logout etc.
 
 // ✅ Default root
 app.get("/", (req, res) => {
-  
   res.send("👋 Hello from Backend");
 
 });
