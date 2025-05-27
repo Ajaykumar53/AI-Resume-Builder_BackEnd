@@ -40,7 +40,10 @@ app.use(user.userAuth);                // /signup /login /logout etc.
 
 // ✅ Default root
 app.get("/", (req, res) => {
+  
+console.log("📍 Chromium path: ", puppeteer.executablePath());
   res.send("👋 Hello from Backend");
+
 });
 
 
